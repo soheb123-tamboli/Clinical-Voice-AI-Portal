@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2Care.ai | Real-Time Multilingual Clinical Voice AI Agent</title>
+    <!-- Google Fonts Outfit & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="glass-bg-blur"></div>
+    
+    <!-- Main Dashboard Container -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-heart-pulse pulse-logo"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>2Care<span>.ai</span></h1>
+                    <p>Clinical Voice AI Portal</p>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <div class="control-badge" id="backend-status">
+                    <span class="status-dot green"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label"><i class="fa-solid fa-brain"></i> AI Mode:</span>
+                    <div class="toggle-switch-wrapper">
+                        <input type="checkbox" id="api-mode-toggle" checked>
+                        <label for="api-mode-toggle" class="toggle-switch">
+                            <span class="toggle-handle"></span>
+                            <span class="toggle-text-left">Mock NLP</span>
+                            <span class="toggle-text-right">OpenAI</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn btn-secondary btn-icon" id="reset-db-btn" title="Reset SQLite Database to Pristine State">
+                    <i class="fa-solid fa-arrow-rotate-right"></i> Reset DB
+                </button>
+            </div>
+        </header>
+
+        <!-- Grid Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- COLUMN 1: Patients & Context -->
+            <section class="grid-card col-patients">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-hospital-user text-teal"></i> Patient Directory</h2>
+                    <p>Select a patient to load their persistent clinical context</p>
+                </div>
+                
+                <div class="patient-selector-wrapper">
+                    <label for="patient-select">Active Patient Profile:</label>
+                    <select id="patient-select" class="form-select">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <!-- Patient Context Card -->
+                <div class="patient-context-card glass-panel">
+                    <div class="patient-card-header">
+                        <div class="patient-avatar">
+                            <span id="patient-avatar-letters">AM</span>
+                        </div>
+                        <div class="patient-title">
+                            <h3 id="patient-name-display">Aarav Mehta</h3>
+                            <span class="badge badge-accent" id="patient-id-display">PAT-1001</span>
+                        </div>
+                    </div>
+                    
+                    <div class="patient-details-list">
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone:</span>
+                            <span class="detail-value" id="patient-phone-display">9876543210</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fa-solid fa-language"></i> Language Pref:</span>
+                            <span class="detail-value badge-lang" id="patient-lang-display">Hindi</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fa-solid fa-user-doctor"></i> Preferred Clinician:</span>
+                            <span class="detail-value" id="patient-doc-display">Dr. Amit Sharma</span>
+                        </div>
+                        <div class="detail-item clinical-notes-box">
+                            <span class="detail-label"><i class="fa-solid fa-notes-medical"></i> Medical Diagnostics:</span>
+                            <p class="detail-value-text" id="patient-notes-display">Hypertension and periodic chest pain tracking. High salt risk.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Bookings List -->
+                <div class="appointments-list-wrapper">
+                    <h3>Active Appointments</h3>
+                    <div class="appointments-scroll-list" id="appointments-container">
+                        <!-- Populated dynamically -->
+                        <div class="no-data">No active appointments found.</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- COLUMN 2: Center Voice AI Console -->
+            <section class="grid-card col-console">
+                <div class="card-header text-center">
+                    <h2>Voice Conversation Hub</h2>
+                    <p>Speak naturally in English, Hindi, or Tamil</p>
+                </div>
+
+                <!-- Wave Visualizer and Mic Control -->
+                <div class="voice-console-panel glass-panel">
+                    <div class="wave-visualizer-container">
+                        <canvas id="wave-canvas" width="400" height="120"></canvas>
+                        
+                        <!-- Pulsating Rings around mic -->
+                        <div class="pulse-ring-container" id="pulse-rings">
+                            <div class="ring ring-1"></div>
+                            <div class="ring ring-2"></div>
+                            <div class="ring ring-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="console-controls">
+                        <button class="mic-button btn-glow-teal" id="mic-btn">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <div class="console-status" id="console-status-text">Idle - Click to Speak</div>
+                    </div>
+
+                    <div class="active-languages-row">
+                        <span class="lang-flag" id="flag-en" title="English Context Active"><span class="flag-dot"></span> EN</span>
+                        <span class="lang-flag" id="flag-hi" title="Hindi Context Active"><span class="flag-dot"></span> HI</span>
+                        <span class="lang-flag" id="flag-ta" title="Tamil Context Active"><span class="flag-dot"></span> TA</span>
+                    </div>
+                </div>
+
+                <!-- Live Chat Transcript -->
+                <div class="chat-transcript-panel glass-panel">
+                    <div class="chat-header-bar">
+                        <span><i class="fa-regular fa-comments"></i> Conversation Transcript</span>
+                        <button class="btn btn-tiny text-teal" id="clear-chat-btn"><i class="fa-regular fa-trash-can"></i> Clear</button>
+                    </div>
+                    <div class="chat-bubble-container" id="chat-messages">
+                        <div class="chat-bubble assistant">
+                            <p>Hello! I am your 2Care.ai digital clinical assistant. How can I manage your appointments today? You can speak or type to me in English, Hindi (कल अपॉइंटमेंट बुक करें), or Tamil (நாளை சந்திப்பை பதிவு செய்யவும்).</p>
+                            <span class="msg-meta">AI Agent &bull; EN</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Fallback Input -->
+                    <form class="text-input-form" id="text-input-form">
+                        <input type="text" id="text-prompt-input" placeholder="Type clinical request or speak..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- COLUMN 3: Campaign & Performance -->
+            <section class="grid-card col-analytics">
+                
+                <!-- Latency Stats -->
+                <div class="analytics-card glass-panel">
+                    <div class="card-header-compact">
+                        <h3><i class="fa-solid fa-gauge-high text-emerald"></i> Performance & Latency</h3>
+                        <span class="latency-badge badge-green" id="latency-total-badge">120 ms</span>
+                    </div>
+                    
+                    <p class="section-desc">E2E Speech-to-Response target: <span class="text-teal font-weight-bold">&lt; 450 ms</span></p>
+                    
+                    <div class="latency-breakdown-list">
+                        <div class="latency-progress-item">
+                            <div class="progress-labels">
+                                <span>Speech recognition (STT)</span>
+                                <span class="progress-val" id="latency-stt">0 ms</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill fill-teal" id="bar-stt" style="width: 0%"></div>
+                            </div>
+                            <span class="mode-descriptor" id="mode-stt">Mode: local fallback</span>
+                        </div>
+
+                        <div class="latency-progress-item">
+                            <div class="progress-labels">
+                                <span>Agent Reasoning & DB</span>
+                                <span class="progress-val" id="latency-agent">120 ms</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill fill-amber" id="bar-agent" style="width: 25%"></div>
+                            </div>
+                        </div>
+
+                        <div class="latency-progress-item">
+                            <div class="progress-labels">
+                                <span>Speech Synthesis (TTS)</span>
+                                <span class="progress-val" id="latency-tts">0 ms</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill fill-cyan" id="bar-tts" style="width: 0%"></div>
+                            </div>
+                            <span class="mode-descriptor" id="mode-tts">Mode: browser fallback</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campaigns Scheduler -->
+                <div class="campaign-card glass-panel">
+                    <div class="card-header-compact">
+                        <h3><i class="fa-solid fa-bullhorn text-amber"></i> Outbound Campaigns</h3>
+                    </div>
+                    <p class="section-desc">Simulate proactive clinical dialing and follow-up sequences</p>
+                    
+                    <div class="campaigns-scroll-list" id="campaigns-container">
+                        <!-- Populated Dynamically -->
+                    </div>
+<button class="btn btn-primary btn-icon" id="run-campaign-btn">Run Campaign</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER: Reasoning CLI Console -->
+        <footer class="app-footer-traces">
+            <div class="traces-header">
+                <h3><i class="fa-solid fa-terminal text-orange"></i> Live Reasoning Traces & Tool Orchestrator Logs</h3>
+                <span class="cli-badge"><span class="pulse-dot-amber"></span> Live Pipeline Stream</span>
+            </div>
+            
+            <div class="traces-console" id="traces-console">
+                <div class="console-line system">[System] Connection established successfully. SQLite database initialized.</div>
+                <div class="console-line system">[System] Waiting for spoken input. Languages enabled: English, Hindi, Tamil.</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- IMMERSIVE OUTBOUND CALL MODAL -->
+    <div class="modal-overlay" id="call-modal">
+        <div class="phone-modal glass-panel">
+            <div class="phone-screen">
+                <div class="caller-avatar">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <h3 id="modal-caller-name">2Care.ai Outbound Call</h3>
+                <p class="phone-number" id="modal-caller-phone">Dialing: +91 98765 43210</p>
+                <div class="call-duration" id="modal-call-duration">Dialing...</div>
+                
+                <!-- Pulsing glowing indicator -->
+                <div class="call-glow-pulse" id="modal-glow-pulse"></div>
+                
+                <div class="caller-details-box">
+                    <div class="detail-row">
+                        <span>Subject:</span> <strong id="modal-camp-name">Cardiology follow-up</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Language:</span> <strong id="modal-camp-lang">Hindi</strong>
+                    </div>
+                </div>
+                
+                <div class="call-action-status" id="modal-call-status">Agent is preparing greeting...</div>
+                
+                <!-- Red End Call Button -->
+                <div class="call-controls-row">
+                    <button class="btn-end-call" id="end-call-btn">
+                        <i class="fa-solid fa-phone-slash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
